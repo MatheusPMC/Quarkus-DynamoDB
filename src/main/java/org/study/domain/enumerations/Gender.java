@@ -19,4 +19,8 @@ public enum Gender {
                 .filter(gender -> gender.getPrefix().equals(prefix))
                 .findFirst().orElse(null);
     }
+
+    public static Character fromGender(Gender gender) {
+        return gender.prefix;
+    }
 }

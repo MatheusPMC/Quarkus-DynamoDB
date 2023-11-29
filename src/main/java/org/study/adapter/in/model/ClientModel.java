@@ -16,7 +16,6 @@ import java.util.UUID;
 @Setter
 @ToString
 public class ClientModel {
-//    @JsonProperty(value = "id", access = JsonProperty.Access.READ_ONLY)
     private UUID id;
 
     @JsonProperty("name")
@@ -31,5 +30,4 @@ public class ClientModel {
     @JsonProperty("gender")
     @Pattern(regexp = "M|F")
     private String gender;
-
 }

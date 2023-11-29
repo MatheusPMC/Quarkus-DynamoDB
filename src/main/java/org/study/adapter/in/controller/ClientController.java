@@ -1,21 +1,19 @@
 package org.study.adapter.in.controller;
 
 import jakarta.validation.Valid;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.study.adapter.in.model.ClientModel;
+import org.study.adapter.in.model.PageModel;
+import org.study.domain.core.PageCore;
 import org.study.domain.entity.ClientEntity;
 import org.study.domain.mapper.ClientMapper;
 import org.study.port.in.ClientCoreIntegration;
+import org.study.port.in.PageCoreIntegration;
 
+import java.util.List;
 import java.util.UUID;
 
 import static net.logstash.logback.argument.StructuredArguments.kv;
@@ -33,14 +31,43 @@ public class ClientController {
     public Response create(@Valid ClientModel clientModel, @Context UriInfo uriInfo) {
         clientModel.setId(UUID.randomUUID());
         log.info("Creating new client: {}", kv("client", clientModel));
-        log.info("Mapping client: {}", kv("client", clientModel));
-        var client = this.mapper.mapOf(clientModel);
+        ClientEntity client = mapper.mapOf(clientModel);
         log.info("Saving client: {}", kv("client", client));
-        ClientEntity savedClient = this.clientCore.save(client);
+        ClientEntity savedClient = clientCore.save(client);
         log.info("Client was saved successfully: {}", savedClient);
-        ClientModel clientEntity = this.mapper.mapOf(savedClient);
-        var uriBuilder = uriInfo.getAbsolutePathBuilder();
-        uriBuilder.path(clientEntity.getId().toString());
-        return Response.created(uriBuilder.build()).entity(clientEntity).build();
+        ClientModel clientModelResponse = mapper.mapOf(savedClient);
+        UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
+        uriBuilder.path(clientModelResponse.getId().toString());
+        return Response.created(uriBuilder.build()).status(Response.Status.CREATED).entity(clientModelResponse).build();
+    }
+
+    @GET
+    public Response findAll(
+            @QueryParam("name") String name,
+            @DefaultValue("0") @QueryParam("page") Integer pageNumber,
+            @DefaultValue("30") @QueryParam("page_size") Integer pageSize
+    ) {
+        log.info("Searching for clients ...");
+        PageModel pageable = PageModel.of(pageNumber, pageSize);
+        PageCoreIntegration<ClientEntity> page = clientCore.findAll(name, pageable);
+        List<ClientModel> listModel = page.getContent().stream()
+                .map(mapper::mapOf).toList();
+        if (!page.isEmpty()) {
+            PageCoreIntegration<ClientModel> pageModel = new PageCore<>(listModel, pageable, page.getTotalElements());
+            log.info("Client found: {}", kv("client", pageModel.getContent()));
+            return Response.status(Response.Status.PARTIAL_CONTENT).entity(pageModel).build();
+        }
+        log.warn("No client found");
+        return Response.noContent().build();
+    }
+
+    @GET
+    @Path("/{id}")
+    public Response findById(@PathParam("id") UUID id) {
+        log.info("Searching for movie by id: {}", kv("id", id));
+        ClientEntity client = clientCore.findById(id);
+        log.info("Client found: {}", kv("client", client));
+        ClientModel clientModelResponse = mapper.mapOf(client);
+        return Response.status(Response.Status.OK).entity(clientModelResponse).build();
     }
 }
