@@ -10,4 +10,6 @@ public interface ClientCoreIntegration {
     PageCoreIntegration<ClientEntity> findAll(String name, PageableCoreIntegration pageable);
 
     ClientEntity findById(UUID id);
+
+    void delete(UUID id);
 }

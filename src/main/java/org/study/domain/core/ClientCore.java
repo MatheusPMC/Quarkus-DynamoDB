@@ -32,4 +32,9 @@ public class ClientCore implements ClientCoreIntegration {
                 .orElseThrow(() -> new ClientNotFoundException(String.format("Client for ID %s does not exist", id)));
         return client;
     }
+
+    @Override
+    public void delete(UUID id) {
+        clientData.delete(id);
+    }
 }

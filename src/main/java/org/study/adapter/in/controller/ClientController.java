@@ -83,4 +83,13 @@ public class ClientController {
         ClientModel clientModelResponse = mapper.mapOf(updatedClient);
         return Response.status(Response.Status.OK).entity(clientModelResponse).build();
     }
+
+    @DELETE
+    @Path("/{id}")
+    public Response delete(@PathParam("id") UUID id) {
+        log.info("Deleting client by id: {}", kv("id", id));
+        clientCore.delete(id);
+        log.info("Client was deleted successfully ...");
+        return Response.ok().build();
+    }
 }

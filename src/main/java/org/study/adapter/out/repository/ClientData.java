@@ -73,4 +73,11 @@ public class ClientData implements ClientDataIntegration {
         var clientEntity = this.dynamoDBMapper.load(ClientEntity.class, id);
         return Optional.ofNullable(clientEntity);
     }
+
+    @Override
+    public void delete(UUID id) {
+        var clientEntity = this.dynamoDBMapper.load(ClientEntity.class, id);
+        Optional.ofNullable(clientEntity)
+                .ifPresent(this.dynamoDBMapper::delete);
+    }
 }
