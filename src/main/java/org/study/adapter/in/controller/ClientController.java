@@ -70,4 +70,17 @@ public class ClientController {
         ClientModel clientModelResponse = mapper.mapOf(client);
         return Response.status(Response.Status.OK).entity(clientModelResponse).build();
     }
+
+    @PUT
+    @Path("/{id}")
+    public Response update(@PathParam("id") UUID id, ClientModel clientModel) {
+        log.info("Searching for movie by id: {}", kv("id", id));
+        ClientEntity existingClient = clientCore.findById(id);
+        clientModel.setId(existingClient.getId());
+        ClientEntity client = mapper.mapOf(clientModel);
+        log.info("Updating client: {}", kv("client", client));
+        ClientEntity updatedClient = clientCore.save(client);
+        ClientModel clientModelResponse = mapper.mapOf(updatedClient);
+        return Response.status(Response.Status.OK).entity(clientModelResponse).build();
+    }
 }
